@@ -2,9 +2,10 @@ package kanda.lab.rickandmorty.data
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class RickAndMortyInfraStructure(
-    private val gateway: RickAndMortyGateway = BuildRetrofit().create(RickAndMortyGateway::class.java)
+class RickAndMortyInfraStructure @Inject constructor(
+    private val gateway: RickAndMortyGateway
 ) : RickAndMortyService {
 
     override suspend fun listCharacters(): List<Character> = withContext(Dispatchers.IO) {
