@@ -4,7 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class RickAndMortyInfraStructure @Inject constructor(
+internal class RickAndMortyInfraStructure @Inject constructor(
     private val gateway: RickAndMortyGateway
 ) : RickAndMortyService {
 

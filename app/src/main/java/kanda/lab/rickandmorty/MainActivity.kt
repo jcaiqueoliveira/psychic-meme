@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun Characters(model: CharactersViewModel) {
+    private fun Characters(model: CharactersViewModel) {
         val characters by model.uiState.collectAsState()
 
         LazyColumn(

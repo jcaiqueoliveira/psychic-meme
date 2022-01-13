@@ -1,6 +1,6 @@
 package kanda.lab.rickandmorty.data
 
-interface  RickAndMortyService {
+internal interface RickAndMortyService {
 
-    suspend fun listCharacters() : List<Character>
+    suspend fun listCharacters(): List<Character>
 }

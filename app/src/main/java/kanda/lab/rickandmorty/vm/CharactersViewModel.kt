@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CharactersViewModel @Inject constructor(
+internal class CharactersViewModel @Inject constructor(
     private val service: RickAndMortyService
 ) : ViewModel() {
 

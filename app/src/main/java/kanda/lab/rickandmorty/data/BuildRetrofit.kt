@@ -6,7 +6,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 
-object BuildRetrofit {
+internal object BuildRetrofit {
 
     operator fun invoke(
         apiURL: String = "https://rickandmortyapi.com/api/",
@@ -24,7 +24,7 @@ object BuildRetrofit {
     }
 }
 
-object JsonSupport {
+private object JsonSupport {
     val relaxed by lazy {
         Json {
             allowSpecialFloatingPointValues = true

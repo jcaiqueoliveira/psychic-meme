@@ -9,7 +9,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class DataModule {
+internal abstract class DataModule {
 
     @Binds
     abstract fun bindRickAndMortyService(infra : RickAndMortyInfraStructure): RickAndMortyService
@@ -18,7 +18,7 @@ abstract class DataModule {
 
 @Module
 @InstallIn(SingletonComponent::class)
-class GatewayModule {
+internal class GatewayModule {
 
     @Provides
     @Singleton
