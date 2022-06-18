@@ -24,6 +24,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
@@ -83,7 +84,7 @@ private fun CharacterItem(character: Character) {
             color = Color.White,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = Color.Black)
+                .background(color = Color.Black.copy(alpha = 0.5f))
         )
     }
 }
