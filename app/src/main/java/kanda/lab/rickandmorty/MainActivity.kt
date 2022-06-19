@@ -10,26 +10,26 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import dagger.hilt.android.AndroidEntryPoint
 import kanda.lab.rickandmorty.data.Character
@@ -43,23 +43,31 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        vm.characters()
         setContent {
-            Characters(vm)
+            HomeScreen()
         }
     }
 
     @Composable
-    private fun Characters(model: CharactersViewModel) {
-        val characters by model.uiState.collectAsState()
-        LazyVerticalGrid(
-            cells = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(items = characters) {
-                CharacterItem(character = it)
-            }
+    private fun HomeScreen() {
+        val state by vm.uiState.collectAsState()
+        when (state) {
+            is StateMachine.Error -> Error()
+            StateMachine.Loading -> Loading()
+            is StateMachine.Success -> GridCharacters(state as StateMachine.Success)
+        }
+    }
+}
+
+@Composable
+private fun GridCharacters(success: StateMachine.Success) {
+    LazyVerticalGrid(
+        cells = GridCells.Fixed(3),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        items(items = success.characters) {
+            CharacterItem(character = it)
         }
     }
 }
@@ -73,7 +81,9 @@ private fun CharacterItem(character: Character) {
             .clickable { },
     ) {
         Image(
-            modifier = Modifier.size(130.dp),
+            modifier = Modifier
+                .size(130.dp)
+                .fillMaxSize(),
             painter = rememberImagePainter(character.image),
             contentDescription = "Image from character ${character.name}",
         )
@@ -88,10 +98,35 @@ private fun CharacterItem(character: Character) {
     }
 }
 
+@Composable
+private fun Loading() {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+        LoadingAnimation(circleColor = Color.Green.copy(alpha = 0.8f))
+    }
+}
+
+@Composable
+private fun Error() {
+    Column(
+        Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "You got an error", color = Color.Green, fontSize = 20.sp)
+        Image(painter = painterResource(R.drawable.rick_error), contentDescription = "error server")
+        Spacer(modifier = Modifier.size(20.dp))
+        Button(
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green.copy(alpha = 0.8f)),
+            onClick = { }) {
+            Text("Retry", color = Color.White)
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     RickandmortyTheme {
-
+        Loading()
     }
 }
