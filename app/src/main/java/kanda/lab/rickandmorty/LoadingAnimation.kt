@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
 // https://gist.github.com/stevdza-san/ad7da2a5e76bde814888a78372e6e216
+// https://www.youtube.com/watch?v=xakNOVaYLAg
 @Composable
 fun LoadingAnimation(
     modifier: Modifier = Modifier,
