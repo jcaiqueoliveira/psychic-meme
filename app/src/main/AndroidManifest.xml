@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="kanda.lab.rickandmorty"
-    android:usesCleartextTraffic="true">
+    package="kanda.lab.rickandmorty">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
+        android:name=".common.RickAndMortyApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:name=".common.RickAndMortyApplication"
         android:theme="@style/Theme.Rickandmorty">
         <activity
-            android:name=".MainActivity"
+            android:name=".home.ui.MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Rickandmorty.NoActionBar">

@@ -1,5 +1,6 @@
 package kanda.lab.rickandmorty.common
 
+import android.app.Application
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,7 +21,7 @@ internal class InfraModule {
 
     @Provides
     @Singleton
-    fun provideRickAndMortyGateway(): RickAndMortyGateway =
-        BuildRetrofit().create(RickAndMortyGateway::class.java)
+    fun provideRickAndMortyGateway(app: Application): RickAndMortyGateway =
+        BuildRetrofit(app).create(RickAndMortyGateway::class.java)
 
 }
