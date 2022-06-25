@@ -2,11 +2,6 @@
 
 package kanda.lab.rickandmorty.home.ui
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,90 +17,40 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberImagePainter
-import dagger.hilt.android.AndroidEntryPoint
-import kanda.lab.rickandmorty.LoadingAnimation
-import kanda.lab.rickandmorty.R
-import kanda.lab.rickandmorty.common.ui.states.StateMachine
 import kanda.lab.rickandmorty.common.theme.RickandmortyTheme
+import kanda.lab.rickandmorty.common.ui.states.ErrorState
+import kanda.lab.rickandmorty.common.ui.states.LoadingState
+import kanda.lab.rickandmorty.common.ui.states.StateMachine
 import kanda.lab.rickandmorty.home.data.Character
 import kotlinx.coroutines.launch
 
-@AndroidEntryPoint
-class MainActivity : ComponentActivity() {
-
-    private val vm: CharactersViewModel by viewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            HomeScreen(vm)
-        }
-    }
-}
-
 @Composable
-private fun HomeScreen(vm: CharactersViewModel) {
+internal fun CharactersScreen(
+    vm: CharactersViewModel = hiltViewModel(),
+    onDetailSelected: () -> Unit,
+) {
     val state by vm.uiState.collectAsState()
     when (state) {
-        is StateMachine.Error -> Error(vm::retry)
-        StateMachine.Loading -> Loading()
-        is StateMachine.Success -> GridCharacters(state as StateMachine.Success)
-    }
-}
-
-@Composable
-private fun Error(retry: () -> Unit) {
-    val isPressed = remember { mutableStateOf(false) }
-
-    Column(
-        Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = "You got an error", color = Color.Green, fontSize = 20.sp)
-        Image(
-            painter = painterResource(R.drawable.rick_error),
-            contentDescription = "error server"
+        is StateMachine.Error -> ErrorState(vm::retry)
+        StateMachine.Loading -> LoadingState()
+        is StateMachine.Success -> GridCharacters(
+            (state as StateMachine.Success).characters,
+            onDetailSelected
         )
-        Spacer(modifier = Modifier.size(20.dp))
-        Button(
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color.Green.copy(alpha = 0.8f)),
-            onClick = {
-                if (isPressed.value.not()) {
-                    isPressed.value = isPressed.value.not()
-                    retry.invoke()
-                }
-            },
-        ) {
-            AnimatedVisibility(visible = isPressed.value) {
-                if (isPressed.value) {
-                    Row {
-                        CircularProgressIndicator(
-                            Modifier.size(20.dp),
-                            color = Color.White,
-                            strokeWidth = 3.dp
-                        )
-                        Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                    }
-                }
-            }
-            Text("Retry", color = Color.White)
-        }
     }
 }
 
 @Composable
-private fun GridCharacters(success: StateMachine.Success) {
+private fun GridCharacters(characters: List<Character>, onClick: () -> Unit) {
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val char = remember { mutableStateOf(success.characters.first()) }
+    val char = remember { mutableStateOf(characters.first()) }
 
     ModalBottomSheetLayout(
         sheetContent = {
@@ -131,6 +76,10 @@ private fun GridCharacters(success: StateMachine.Success) {
                     modifier = Modifier
                         .fillMaxWidth()
                 )
+
+                Button(onClick = onClick) {
+                    Text("Click to move", color = Color.Green)
+                }
             }
         },
         sheetState = sheetState,
@@ -141,7 +90,7 @@ private fun GridCharacters(success: StateMachine.Success) {
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            items(items = success.characters) {
+            items(items = characters) {
                 CharacterItem(character = it) {
                     coroutineScope.launch {
                         char.value = it
@@ -181,17 +130,10 @@ private fun CharacterItem(character: Character, detail: () -> Unit) {
     }
 }
 
-@Composable
-private fun Loading() {
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-        LoadingAnimation(circleColor = Color.Green.copy(alpha = 0.8f))
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
     RickandmortyTheme {
-        Loading()
+        LoadingState()
     }
 }

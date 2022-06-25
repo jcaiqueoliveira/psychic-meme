@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Rickandmorty">
         <activity
-            android:name=".home.ui.MainActivity"
+            android:name=".EntryPointActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Rickandmorty.NoActionBar">
