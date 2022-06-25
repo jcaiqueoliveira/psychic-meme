@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,6 +29,7 @@ import kanda.lab.rickandmorty.common.ui.states.ErrorState
 import kanda.lab.rickandmorty.common.ui.states.LoadingState
 import kanda.lab.rickandmorty.common.ui.states.StateMachine
 import kanda.lab.rickandmorty.home.data.Character
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -39,64 +41,100 @@ internal fun CharactersScreen(
     when (state) {
         is StateMachine.Error -> ErrorState(vm::retry)
         StateMachine.Loading -> LoadingState()
-        is StateMachine.Success -> GridCharacters(
-            (state as StateMachine.Success).characters,
-            onDetailSelected
-        )
+        is StateMachine.Success -> {
+            val characters = (state as StateMachine.Success).characters
+            val char = remember { mutableStateOf(characters.first()) }
+            GridCharacters(
+                characters = characters,
+                char = char,
+                onClick = onDetailSelected,
+            )
+        }
     }
 }
 
 @Composable
-private fun GridCharacters(characters: List<Character>, onClick: () -> Unit) {
+private fun GridCharacters(
+    characters: List<Character>,
+    char: MutableState<Character>,
+    onClick: () -> Unit,
+) {
     val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val char = remember { mutableStateOf(characters.first()) }
 
     ModalBottomSheetLayout(
+        modifier = Modifier.clip(RoundedCornerShape(10.dp)),
         sheetContent = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp)
-            ) {
-                Text(
-                    text = char.value.name,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.h5,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-
-                Text(
-                    text = char.value.species,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.h5,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                )
-
-                Button(onClick = onClick) {
-                    Text("Click to move", color = Color.Green)
-                }
-            }
+            SheetContent(
+                modifier = Modifier.height(250.dp),
+                char = char.value,
+                onClick = onClick
+            )
         },
         sheetState = sheetState,
-        sheetBackgroundColor = Color.White
+        sheetBackgroundColor = Color.DarkGray
     ) {
-        LazyVerticalGrid(
-            cells = GridCells.Fixed(3),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(items = characters) {
-                CharacterItem(character = it) {
-                    coroutineScope.launch {
-                        char.value = it
-                        if (sheetState.isVisible) sheetState.hide() else sheetState.show()
-                    }
+        GridContent(coroutineScope, characters, sheetState, char)
+    }
+}
+
+@Composable
+private fun GridContent(
+    coroutineScope: CoroutineScope,
+    characters: List<Character>,
+    sheetState: ModalBottomSheetState,
+    char: MutableState<Character>
+) {
+    LazyVerticalGrid(
+        cells = GridCells.Fixed(3),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        items(items = characters) {
+            CharacterItem(character = it) {
+                coroutineScope.launch {
+                    char.value = it
+                    if (sheetState.isVisible) sheetState.hide() else sheetState.show()
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SheetContent(modifier: Modifier, char: Character, onClick: () -> Unit) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth(),
+    ) {
+
+        Image(
+            modifier = modifier
+                .width(180.dp)
+                .fillMaxHeight(),
+            painter = rememberImagePainter(char.image),
+            contentDescription = "Image from character ${char.name}",
+            contentScale = ContentScale.Crop
+        )
+        Column(Modifier.padding(start = 8.dp)) {
+            Text(
+                text = char.name,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.h5,
+                fontWeight = FontWeight.Bold,
+            )
+
+            Text(
+                text = char.species,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.h5,
+            )
+
+            OutlinedButton(
+                modifier = Modifier.align(Alignment.CenterHorizontally),
+                onClick = onClick,
+            ) {
+                Text("More details", color = Color.Black)
             }
         }
     }
