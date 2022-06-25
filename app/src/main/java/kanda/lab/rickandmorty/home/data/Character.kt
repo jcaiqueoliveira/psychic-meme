@@ -9,4 +9,4 @@ internal data class Character(
     val status: String,
     val species: String,
     val image: String
-)
+) : java.io.Serializable

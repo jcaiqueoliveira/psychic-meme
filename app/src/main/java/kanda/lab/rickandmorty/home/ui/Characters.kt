@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +30,6 @@ import kanda.lab.rickandmorty.common.ui.states.ErrorState
 import kanda.lab.rickandmorty.common.ui.states.LoadingState
 import kanda.lab.rickandmorty.common.ui.states.StateMachine
 import kanda.lab.rickandmorty.home.data.Character
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -43,10 +43,8 @@ internal fun CharactersScreen(
         StateMachine.Loading -> LoadingState()
         is StateMachine.Success -> {
             val characters = (state as StateMachine.Success).characters
-            val char = remember { mutableStateOf(characters.first()) }
             GridCharacters(
                 characters = characters,
-                char = char,
                 onClick = onDetailSelected,
             )
         }
@@ -56,34 +54,35 @@ internal fun CharactersScreen(
 @Composable
 private fun GridCharacters(
     characters: List<Character>,
-    char: MutableState<Character>,
     onClick: () -> Unit,
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val charState = rememberSaveable { mutableStateOf(characters.first()) }
+    val coroutineScope = rememberCoroutineScope()
 
     ModalBottomSheetLayout(
         modifier = Modifier.clip(RoundedCornerShape(10.dp)),
         sheetContent = {
             SheetContent(
-                modifier = Modifier.height(250.dp),
-                char = char.value,
-                onClick = onClick
+                modifier = Modifier.height(250.dp), char = charState.value, onClick = onClick
             )
         },
         sheetState = sheetState,
         sheetBackgroundColor = Color.DarkGray
     ) {
-        GridContent(coroutineScope, characters, sheetState, char)
+        GridContent(characters = characters, toggleBottomSheet = { character ->
+            charState.value = character
+            coroutineScope.launch {
+                if (sheetState.isVisible) sheetState.hide() else sheetState.show()
+            }
+        })
     }
 }
 
 @Composable
 private fun GridContent(
-    coroutineScope: CoroutineScope,
     characters: List<Character>,
-    sheetState: ModalBottomSheetState,
-    char: MutableState<Character>
+    toggleBottomSheet: (Character) -> Unit,
 ) {
     LazyVerticalGrid(
         cells = GridCells.Fixed(3),
@@ -91,12 +90,7 @@ private fun GridContent(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items(items = characters) {
-            CharacterItem(character = it) {
-                coroutineScope.launch {
-                    char.value = it
-                    if (sheetState.isVisible) sheetState.hide() else sheetState.show()
-                }
-            }
+            CharacterItem(character = it, detail = { toggleBottomSheet.invoke(it) })
         }
     }
 }
@@ -104,8 +98,7 @@ private fun GridContent(
 @Composable
 private fun SheetContent(modifier: Modifier, char: Character, onClick: () -> Unit) {
     Row(
-        modifier = modifier
-            .fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
     ) {
 
         Image(

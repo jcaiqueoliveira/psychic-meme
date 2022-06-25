@@ -16,7 +16,11 @@ fun RickAndMortyApp() {
         route = Router.ENTRY_POINT,
         startDestination = Router.CHARACTER_GRID
     ) {
-        composable(Router.CHARACTER_GRID) { CharactersScreen { navHost.navigate(Router.CHARACTER_DETAIL) } }
+        composable(Router.CHARACTER_GRID) {
+            CharactersScreen(onDetailSelected = {
+                navHost.navigate(Router.CHARACTER_DETAIL)
+            })
+        }
         composable(Router.CHARACTER_DETAIL) { CharDetail() }
     }
 }
