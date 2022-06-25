@@ -1,16 +1,14 @@
-package kanda.lab.rickandmorty
+package kanda.lab.rickandmorty.common.ui.states
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -22,7 +20,7 @@ import kotlinx.coroutines.delay
 // https://gist.github.com/stevdza-san/ad7da2a5e76bde814888a78372e6e216
 // https://www.youtube.com/watch?v=xakNOVaYLAg
 @Composable
-fun LoadingAnimation(
+internal fun LoadingAnimation(
     modifier: Modifier = Modifier,
     circleSize: Dp = 25.dp,
     circleColor: Color = MaterialTheme.colors.primary,
@@ -74,5 +72,12 @@ fun LoadingAnimation(
                     )
             )
         }
+    }
+}
+
+@Composable
+fun LoadingState() {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+        LoadingAnimation(circleColor = Color.Green.copy(alpha = 0.8f))
     }
 }
