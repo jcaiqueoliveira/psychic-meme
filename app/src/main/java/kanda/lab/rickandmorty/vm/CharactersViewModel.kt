@@ -1,6 +1,5 @@
 package kanda.lab.rickandmorty.vm
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,11 +22,12 @@ internal class CharactersViewModel @Inject constructor(
         characters()
     }
 
+    fun retry() = characters()
+
     private fun characters() {
         viewModelScope.launch {
             service.listCharacters()
                 .also {
-                    Log.e("size", it.size.toString())
                     _uiState.emit(StateMachine.Success(it))
                 }
         }
