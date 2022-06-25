@@ -30,7 +30,6 @@ import kanda.lab.rickandmorty.common.ui.states.ErrorState
 import kanda.lab.rickandmorty.common.ui.states.LoadingState
 import kanda.lab.rickandmorty.common.ui.states.StateMachine
 import kanda.lab.rickandmorty.home.data.Character
-import kotlinx.coroutines.launch
 
 @Composable
 internal fun CharactersScreen(
@@ -45,7 +44,7 @@ internal fun CharactersScreen(
             val characters = (state as StateMachine.Success).characters
             GridCharacters(
                 characters = characters,
-                onClick = onDetailSelected,
+                onMoreDetailClicked = onDetailSelected,
             )
         }
     }
@@ -54,28 +53,37 @@ internal fun CharactersScreen(
 @Composable
 private fun GridCharacters(
     characters: List<Character>,
-    onClick: () -> Unit,
+    onMoreDetailClicked: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-    val charState = rememberSaveable { mutableStateOf(characters.first()) }
-    val coroutineScope = rememberCoroutineScope()
+    val characterState = rememberSaveable { mutableStateOf(characters.first()) }
+    val toggleState = remember { mutableStateOf(0) }
+
+    LaunchedEffect(key1 = characterState.value, key2 = toggleState.value) {
+        if (toggleState.value != 0) {
+            if (sheetState.isVisible) sheetState.hide() else sheetState.show()
+        }
+    }
 
     ModalBottomSheetLayout(
         modifier = Modifier.clip(RoundedCornerShape(10.dp)),
         sheetContent = {
             SheetContent(
-                modifier = Modifier.height(250.dp), char = charState.value, onClick = onClick
+                modifier = Modifier.height(250.dp),
+                char = characterState.value,
+                onMoreDetailClicked = onMoreDetailClicked
             )
         },
         sheetState = sheetState,
         sheetBackgroundColor = Color.DarkGray
     ) {
-        GridContent(characters = characters, toggleBottomSheet = { character ->
-            charState.value = character
-            coroutineScope.launch {
-                if (sheetState.isVisible) sheetState.hide() else sheetState.show()
+        GridContent(
+            characters = characters,
+            toggleBottomSheet = { character ->
+                toggleState.value++
+                characterState.value = character
             }
-        })
+        )
     }
 }
 
@@ -90,16 +98,14 @@ private fun GridContent(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items(items = characters) {
-            CharacterItem(character = it, detail = { toggleBottomSheet.invoke(it) })
+            CharacterItem(character = it, detail = { toggleBottomSheet(it) })
         }
     }
 }
 
 @Composable
-private fun SheetContent(modifier: Modifier, char: Character, onClick: () -> Unit) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-    ) {
+private fun SheetContent(modifier: Modifier, char: Character, onMoreDetailClicked: () -> Unit) {
+    Row(modifier = modifier.fillMaxWidth()) {
 
         Image(
             modifier = modifier
@@ -125,7 +131,7 @@ private fun SheetContent(modifier: Modifier, char: Character, onClick: () -> Uni
 
             OutlinedButton(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = onClick,
+                onClick = onMoreDetailClicked,
             ) {
                 Text("More details", color = Color.Black)
             }
@@ -137,16 +143,13 @@ private fun SheetContent(modifier: Modifier, char: Character, onClick: () -> Uni
 private fun CharacterItem(character: Character, detail: () -> Unit) {
     Box(
         contentAlignment = Alignment.BottomCenter,
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .clickable {
-                detail.invoke()
-            },
+        modifier = Modifier.clip(RoundedCornerShape(10.dp)),
     ) {
         Image(
             modifier = Modifier
                 .size(130.dp)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .clickable { detail.invoke() },
             painter = rememberImagePainter(character.image),
             contentDescription = "Image from character ${character.name}",
         )
