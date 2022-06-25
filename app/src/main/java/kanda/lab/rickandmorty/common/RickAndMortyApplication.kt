@@ -1,4 +1,4 @@
-package kanda.lab.rickandmorty
+package kanda.lab.rickandmorty.common
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

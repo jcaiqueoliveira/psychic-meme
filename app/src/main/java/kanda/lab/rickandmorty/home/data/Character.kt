@@ -1,4 +1,4 @@
-package kanda.lab.rickandmorty.data
+package kanda.lab.rickandmorty.home.data
 
 import kotlinx.serialization.Serializable
 

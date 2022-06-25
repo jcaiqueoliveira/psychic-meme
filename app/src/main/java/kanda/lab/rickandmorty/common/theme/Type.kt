@@ -1,4 +1,4 @@
-package kanda.lab.rickandmorty.ui.theme
+package kanda.lab.rickandmorty.common.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle

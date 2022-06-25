@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalFoundationApi::class, ExperimentalMaterialApi::class)
 
-package kanda.lab.rickandmorty
+package kanda.lab.rickandmorty.home.ui
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -30,9 +30,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import dagger.hilt.android.AndroidEntryPoint
-import kanda.lab.rickandmorty.data.Character
-import kanda.lab.rickandmorty.ui.theme.RickandmortyTheme
-import kanda.lab.rickandmorty.vm.CharactersViewModel
+import kanda.lab.rickandmorty.LoadingAnimation
+import kanda.lab.rickandmorty.R
+import kanda.lab.rickandmorty.common.ui.states.StateMachine
+import kanda.lab.rickandmorty.common.theme.RickandmortyTheme
+import kanda.lab.rickandmorty.home.data.Character
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint

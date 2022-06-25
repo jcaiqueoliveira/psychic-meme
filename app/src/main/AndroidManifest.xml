@@ -12,7 +12,7 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:name=".RickAndMortyApplication"
+        android:name=".common.RickAndMortyApplication"
         android:theme="@style/Theme.Rickandmorty">
         <activity
             android:name=".MainActivity"

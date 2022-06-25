@@ -1,4 +1,4 @@
-package kanda.lab.rickandmorty.ui.theme
+package kanda.lab.rickandmorty.common.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
