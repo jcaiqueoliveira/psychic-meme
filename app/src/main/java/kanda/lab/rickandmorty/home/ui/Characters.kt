@@ -34,9 +34,12 @@ import kanda.lab.rickandmorty.home.data.Character
 @Composable
 internal fun CharactersScreen(
     vm: CharactersViewModel = hiltViewModel(),
-    onDetailSelected: () -> Unit,
+    navigateToDetail: () -> Unit,
 ) {
     val state by vm.uiState.collectAsState()
+    var toggleState by remember { mutableStateOf(0) }
+    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+
     when (state) {
         is StateMachine.Error -> ErrorState(vm::retry)
         StateMachine.Loading -> LoadingState()
@@ -44,7 +47,10 @@ internal fun CharactersScreen(
             val characters = (state as StateMachine.Success).characters
             GridCharacters(
                 characters = characters,
-                onMoreDetailClicked = onDetailSelected,
+                onMoreDetailClicked = navigateToDetail,
+                keyValue = toggleState,
+                onKeyValueChange = { toggleState++ },
+                sheetState = sheetState,
             )
         }
     }
@@ -54,13 +60,14 @@ internal fun CharactersScreen(
 private fun GridCharacters(
     characters: List<Character>,
     onMoreDetailClicked: () -> Unit,
+    keyValue: Int,
+    onKeyValueChange: () -> Unit,
+    sheetState: ModalBottomSheetState
 ) {
-    val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
     val characterState = rememberSaveable { mutableStateOf(characters.first()) }
-    val toggleState = remember { mutableStateOf(0) }
 
-    LaunchedEffect(key1 = characterState.value, key2 = toggleState.value) {
-        if (toggleState.value != 0) {
+    LaunchedEffect(key1 = keyValue) {
+        if (keyValue != 0) {
             if (sheetState.isVisible) sheetState.hide() else sheetState.show()
         }
     }
@@ -80,7 +87,7 @@ private fun GridCharacters(
         GridContent(
             characters = characters,
             toggleBottomSheet = { character ->
-                toggleState.value++
+                onKeyValueChange.invoke()
                 characterState.value = character
             }
         )
@@ -98,6 +105,7 @@ private fun GridContent(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items(items = characters) {
+
             CharacterItem(character = it, detail = { toggleBottomSheet(it) })
         }
     }
