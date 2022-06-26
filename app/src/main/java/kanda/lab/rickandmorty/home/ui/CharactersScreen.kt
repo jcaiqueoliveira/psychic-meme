@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -24,7 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
 import kanda.lab.rickandmorty.common.theme.RickandmortyTheme
 import kanda.lab.rickandmorty.common.ui.states.ErrorState
 import kanda.lab.rickandmorty.common.ui.states.LoadingState
@@ -51,6 +50,8 @@ internal fun CharactersScreen(
                 keyValue = toggleState,
                 onKeyValueChange = { toggleState++ },
                 sheetState = sheetState,
+                getSelectedCharacter = { vm.getSelectedChar()?.getOrNull() },
+                onCharacterSelected = { c -> vm.charDetailSelected(c) }
             )
         }
     }
@@ -62,9 +63,10 @@ private fun GridCharacters(
     onMoreDetailClicked: () -> Unit,
     keyValue: Int,
     onKeyValueChange: () -> Unit,
-    sheetState: ModalBottomSheetState
+    sheetState: ModalBottomSheetState,
+    getSelectedCharacter: () -> Character?,
+    onCharacterSelected: (Character) -> Unit
 ) {
-    val characterState = rememberSaveable { mutableStateOf(characters.first()) }
 
     LaunchedEffect(key1 = keyValue) {
         if (keyValue != 0) {
@@ -73,22 +75,23 @@ private fun GridCharacters(
     }
 
     ModalBottomSheetLayout(
-        modifier = Modifier.clip(RoundedCornerShape(10.dp)),
         sheetContent = {
             SheetContent(
-                modifier = Modifier.height(250.dp),
-                char = characterState.value,
+                modifier = Modifier
+                    .height(250.dp)
+                    .clip(RoundedCornerShape(10.dp)),
+                getSelectedCharacter = getSelectedCharacter,
                 onMoreDetailClicked = onMoreDetailClicked
             )
         },
         sheetState = sheetState,
-        sheetBackgroundColor = Color.DarkGray
+        sheetBackgroundColor = Color.Transparent
     ) {
         GridContent(
             characters = characters,
             toggleBottomSheet = { character ->
                 onKeyValueChange.invoke()
-                characterState.value = character
+                onCharacterSelected.invoke(character)
             }
         )
     }
@@ -112,36 +115,55 @@ private fun GridContent(
 }
 
 @Composable
-private fun SheetContent(modifier: Modifier, char: Character, onMoreDetailClicked: () -> Unit) {
-    Row(modifier = modifier.fillMaxWidth()) {
+private fun SheetContent(
+    modifier: Modifier,
+    getSelectedCharacter: () -> Character?,
+    onMoreDetailClicked: () -> Unit
+) {
+    val char = getSelectedCharacter()
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(Color.Gray)
+    ) {
+        if (char != null) {
 
-        Image(
-            modifier = modifier
-                .width(180.dp)
-                .fillMaxHeight(),
-            painter = rememberImagePainter(char.image),
-            contentDescription = "Image from character ${char.name}",
-            contentScale = ContentScale.Crop
-        )
-        Column(Modifier.padding(start = 8.dp)) {
-            Text(
-                text = char.name,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.h5,
-                fontWeight = FontWeight.Bold,
+            Image(
+                modifier = Modifier
+                    .padding(start = 8.dp, top = 8.dp, bottom = 8.dp)
+                    .width(180.dp)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)),
+                painter = rememberAsyncImagePainter(char.image),
+                contentDescription = "Image from character ${char.name}",
+                contentScale = ContentScale.Crop
             )
-
-            Text(
-                text = char.species,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.h5,
-            )
-
-            OutlinedButton(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = onMoreDetailClicked,
+            Column(
+                Modifier
+                    .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
+                    .clip(RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp))
+                    .fillMaxSize()
+                    .background(Color.DarkGray)
             ) {
-                Text("More details", color = Color.Black)
+                Text(
+                    text = char.name,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.h5,
+                    fontWeight = FontWeight.Bold,
+                )
+
+                Text(
+                    text = char.species,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.h5,
+                )
+
+                OutlinedButton(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = onMoreDetailClicked,
+                ) {
+                    Text("More details", color = Color.Black)
+                }
             }
         }
     }
@@ -158,7 +180,7 @@ private fun CharacterItem(character: Character, detail: () -> Unit) {
                 .size(130.dp)
                 .fillMaxSize()
                 .clickable { detail.invoke() },
-            painter = rememberImagePainter(character.image),
+            painter = rememberAsyncImagePainter(character.image),
             contentDescription = "Image from character ${character.name}",
         )
         Text(
