@@ -31,7 +31,7 @@ import kanda.lab.rickandmorty.home.data.Character
 @Composable
 internal fun CharactersScreen(
     vm: CharactersViewModel = hiltViewModel(),
-    navigateToDetail: () -> Unit,
+    navigateToDetail: (Character) -> Unit,
 ) {
     val state by vm.uiState.collectAsState()
     var toggleState by remember { mutableStateOf(0) }
@@ -58,7 +58,7 @@ internal fun CharactersScreen(
 @Composable
 private fun GridCharacters(
     characters: List<Character>,
-    onMoreDetailClicked: () -> Unit,
+    onMoreDetailClicked: (Character) -> Unit,
     keyValue: Int,
     onKeyValueChange: () -> Unit,
     sheetState: ModalBottomSheetState,
@@ -116,7 +116,7 @@ private fun GridContent(
 private fun SheetContent(
     modifier: Modifier,
     getSelectedCharacter: () -> Character?,
-    onMoreDetailClicked: () -> Unit
+    onMoreDetailClicked: (Character) -> Unit
 ) {
     val char = getSelectedCharacter()
     Row(
@@ -166,7 +166,7 @@ private fun SheetContent(
                     modifier = Modifier
                         .align(CenterHorizontally)
                         .padding(8.dp),
-                    onClick = onMoreDetailClicked,
+                    onClick = { onMoreDetailClicked(char) },
                     border = BorderStroke(1.dp, Color.White),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color.Transparent)
                 ) {
