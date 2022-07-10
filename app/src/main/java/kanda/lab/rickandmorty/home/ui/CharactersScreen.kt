@@ -122,26 +122,23 @@ private fun SheetContent(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.Gray)
     ) {
         if (char != null) {
 
             Image(
                 modifier = Modifier
-                    .padding(start = 8.dp, top = 8.dp, bottom = 8.dp)
                     .width(180.dp)
                     .fillMaxHeight()
-                    .clip(RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp)),
+                    .clip(RoundedCornerShape(topStart = 10.dp)),
                 painter = rememberAsyncImagePainter(char.image),
                 contentDescription = "Image from character ${char.name}",
                 contentScale = ContentScale.Crop
             )
             Column(
                 Modifier
-                    .padding(top = 8.dp, bottom = 8.dp, end = 8.dp)
-                    .clip(RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp))
+                    .clip(RoundedCornerShape(topEnd = 10.dp))
                     .fillMaxSize()
-                    .background(Color.DarkGray)
+                    .background(Color(0xFF3c3e44))
             ) {
                 Text(
                     text = char.name,
